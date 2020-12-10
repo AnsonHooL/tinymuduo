@@ -41,6 +41,6 @@ int main()
     loop->quit();
 
     printf("exit main(1).\n");
-    
+
 }
 
