@@ -106,13 +106,24 @@ TimerQueue::~TimerQueue()
     }
 }
 
-///增加一个定时器，插入到有序的定时器set中，并判断其是否是最早的定时器
-///如果是，则更新timer_fd
+
+
+///线程安全的往事件循环里面异步加入定时器
+///使用run in loop
 TimerId TimerQueue::addTimer(const TimerCallback& cb,
                              Timestamp when,
                              double interval)
 {
     Timer* timer = new Timer(cb, when, interval);
+    loop_->runInLoop(
+            std::bind(&TimerQueue::addTimerInLoop,this,timer));
+    return TimerId(timer);
+}
+
+///增加一个定时器，插入到有序的定时器set中，并判断其是否是最早的定时器
+///如果是，则更新timer_fd
+void TimerQueue::addTimerInLoop(Timer* timer)
+{
     loop_->assertInLoopThread();
     bool earliestChanged = insert(timer);
 
@@ -120,7 +131,6 @@ TimerId TimerQueue::addTimer(const TimerCallback& cb,
     {
         resetTimerfd(timerfd_, timer->expiration());
     }
-    return TimerId(timer);
 }
 
 

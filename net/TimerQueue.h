@@ -32,6 +32,7 @@ public:
     /// repeats if @c interval > 0.0.
     ///
     /// Must be thread safe. Usually be called from other threads.
+    /// 被其他线程调用runat()时候就要保证线程安全，这里不用锁机制，用函数队列
     /// EventLoop用run in loop后可以解决线程安全的问题
     TimerId addTimer(const muduo::TimerCallback& cb,
                      muduo::Timestamp when,
@@ -45,6 +46,7 @@ private:
     typedef std::pair<muduo::Timestamp, Timer*> Entry;//用同时到期的定时器，所以用时间戳+地址找到唯一定时器
     typedef std::set<Entry> TimerList;
 
+    void addTimerInLoop(Timer* timer);
     // called when timerfd alarms
     void handleRead();
     // move out all expired timers
