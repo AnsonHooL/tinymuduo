@@ -7,12 +7,14 @@
 
 class noncopyable
 {
-public:
+protected:
     noncopyable() = default;
     ~noncopyable() = default;
-    noncopyable(const noncopyable& other) = delete;
-    noncopyable& operator=(const noncopyable& other) = delete;
-    noncopyable& operator=(const noncopyable&& other) = delete;
+
+private:
+    noncopyable(const noncopyable&);
+    noncopyable& operator=(const noncopyable&);
+    noncopyable& operator=(const noncopyable&&);
 };
 
 
