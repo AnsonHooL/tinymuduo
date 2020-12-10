@@ -12,23 +12,35 @@
 #include <stdio.h>
 
 
+#include "EventLoop.h"
+#include "EventLoopThread.h"
 #include <stdio.h>
 
-EventLoop* g_loop;
-
-void print(){ printf("hello\n");}
-void threadFunc()
+void runInThread()
 {
-    g_loop->runAfter(1.0,print);
-    sleep(1);
-    g_loop->quit();
+    printf("runInThread(): pid = %d, tid = %d\n",
+           getpid(), muduo::CurrentThread::tid());
 }
+
+
+
 int main()
 {
-    EventLoop loop;
-    g_loop = &loop;
 
-    muduo::Thread t(threadFunc);
-    t.start();
-    loop.loop();
+    printf("main(): pid = %d, tid = %d\n",
+           getpid(), muduo::CurrentThread::tid());
+
+    muduo::EventLoopThread loopThread;
+
+    EventLoop* loop = loopThread.startLoop();
+
+    loop->runInLoop(runInThread);
+    sleep(1);
+    loop->runAfter(2, runInThread);
+    sleep(3);
+    loop->quit();
+
+    printf("exit main(1).\n");
+    
 }
+
