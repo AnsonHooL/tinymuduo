@@ -15,6 +15,8 @@
 
 using namespace muduo;
 
+///TLS thread local storage 每个线程有一份自己的Eventloop指针
+///注意tls存储不是什么都能存储，POD，plain old data
 __thread EventLoop* t_loopInThisThread = 0;
 const int kPollTimeMs = 10000;
 
@@ -31,7 +33,8 @@ static int createEventfd()
 
 }
 
-
+///监听wakeup_fd，说明有异步的回调函数需要操作（add timer等）
+///初始化有wakeup_fd，timer_fd，acceptor_fd
 EventLoop::EventLoop()
         : looping_(false),
           quit_(false),
@@ -55,6 +58,7 @@ EventLoop::EventLoop()
             std::bind(&EventLoop::handleRead, this));
     // we are always reading the wakeupfd
     wakeupChannel_->enableReading();
+
 }
 
 ///用了unique_ptr自动释放资源
@@ -101,6 +105,7 @@ void EventLoop::quit()
 
 ///本线程则直接调用注册函数@c cb，非本线程则将函数加入
 ///到待完成队列中
+///run_inLoop就像一个任务队列一样，有什么需要执行的函数就往里面扔，然后就可以执行
 void EventLoop::runInLoop(const Functor& cb)
 {
     if (isInLoopThread())
@@ -129,6 +134,7 @@ void EventLoop::queueInLoop(const Functor& cb)
     }
 }
 
+///三个定时器功能，异步执行回调函数
 TimerId EventLoop::runAt(const Timestamp& time, const TimerCallback& cb)
 {
     return timerQueue_->addTimer(cb, time, 0.0);
@@ -146,15 +152,13 @@ TimerId EventLoop::runEvery(double interval, const TimerCallback& cb)
     return timerQueue_->addTimer(cb, time, interval);
 }
 
+///线程安全地更新channel
 void EventLoop::updateChannel(Channel* channel)
 {
     assert(channel->ownerLoop() == this);
     assertInLoopThread();
     poller_->updateChannel(channel);
 }
-
-
-
 
 void EventLoop::abortNotInLoopThread()
 {
@@ -174,7 +178,7 @@ void EventLoop::wakeup()
     }
 }
 
-///读eventfd，水平触发必须读，否则一直
+///读event_fd，水平触发必须读，否则一直
 void EventLoop::handleRead()
 {
     uint64_t one = 1;

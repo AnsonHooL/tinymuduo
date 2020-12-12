@@ -16,6 +16,7 @@ const int Channel::kNoneEvent = 0;
 const int Channel::kReadEvent = POLLIN | POLLPRI;  //读事件，POLLPRI紧急读事件tcp带外数据
 const int Channel::kWriteEvent = POLLOUT;
 
+///指定channel关注的文件描述符fd，和所属的EventLoop
 Channel::Channel(EventLoop* loop, int fdArg)
         : loop_(loop),
           fd_(fdArg),
@@ -25,11 +26,13 @@ Channel::Channel(EventLoop* loop, int fdArg)
 {
 }
 
+///更新channel关注的事件
 void Channel::update()
 {
     loop_->updateChannel(this);
 }
 
+///channel响应可读可写事件还有error，执行注册的回调函数
 void Channel::handleEvent()
 {
     if (revents_ & POLLNVAL) {

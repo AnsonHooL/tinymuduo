@@ -17,6 +17,10 @@ using namespace muduo;
 namespace detail
 {
 ///和sockaddr_in等价的结构体
+///内存结构 网络序列大端
+///sockaddr_in： 2B协议族（ipv4or6） 2B端口 4Bip 8B填充
+///sockaddr_in6： 2B协议族（ipv4or6） 2B端口 4Binformation 16Bip 4Bscope地址 28B
+///他们通过开头的协议族进行确定类型，复用函数
 typedef struct sockaddr SA;
 
 ///implicit_cast是用来替换static_cast做向上转换，并在编译器检查是否出错的安全转换

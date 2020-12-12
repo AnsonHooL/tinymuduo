@@ -14,6 +14,7 @@ namespace sockets
 {
 
 ///头文件定义的inline函数
+///定义了一些字节序转换的函数
 inline uint64_t hostToNetwork64(uint64_t host64)
 {
     return htobe64(host64);

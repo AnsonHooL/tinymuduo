@@ -11,6 +11,7 @@ class Timer;
 
 ///
 /// An opaque identifier, for canceling Timer.
+/// 用户只看到这个定时器ID，用于删除定时器timer
 ///
 class TimerId : public muduo::copyable
 {

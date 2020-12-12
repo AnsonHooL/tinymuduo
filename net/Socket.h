@@ -7,6 +7,7 @@
 
 #include "noncopyable.h"
 
+
 class InetAddress;
 
 ///
@@ -14,6 +15,9 @@ class InetAddress;
 ///
 /// It closes the sockfd when desctructs.
 /// It's thread safe, all operations are delagated to OS.
+/// Socket 是给用户的接口，调用Socketops 和 InetAddress完成bind、listen、accept、shutdown，地址二进制和点分式转换等操作
+
+
 class Socket : noncopyable
 {
 public:

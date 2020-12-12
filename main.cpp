@@ -1,46 +1,27 @@
-#include "Channel.h"
+#include "Acceptor.h"
 #include "EventLoop.h"
-
-#include <stdio.h>
-#include <sys/timerfd.h>
-#include <unistd.h>
-
-#include "EventLoop.h"
-
-#include <boost/bind.hpp>
-#include "Thread.h"
+#include "InetAddress.h"
+#include "SocketsOps.h"
 #include <stdio.h>
 
-
-#include "EventLoop.h"
-#include "EventLoopThread.h"
-#include <stdio.h>
-
-void runInThread()
+void newConnection(int sockfd, const InetAddress& peerAddr)
 {
-    printf("runInThread(): pid = %d, tid = %d\n",
-           getpid(), muduo::CurrentThread::tid());
+    printf("newConnection(): accepted a new connection from %s\n",
+           peerAddr.toHostPort().c_str());
+    ::write(sockfd, "How are you?\n", 13);
+    muduo::sockets::close(sockfd);
 }
-
-
 
 int main()
 {
+    printf("main(): pid = %d\n", getpid());
 
-    printf("main(): pid = %d, tid = %d\n",
-           getpid(), muduo::CurrentThread::tid());
+    InetAddress listenAddr(9981);
+    EventLoop loop;
 
-    muduo::EventLoopThread loopThread;
+    Acceptor acceptor(&loop, listenAddr);
+    acceptor.setNewConnectionCallback(newConnection);
+    acceptor.listen();
 
-    EventLoop* loop = loopThread.startLoop();
-
-    loop->runInLoop(runInThread);
-    sleep(1);
-    loop->runAfter(2, runInThread);
-    sleep(3);
-    loop->quit();
-
-    printf("exit main(1).\n");
-
+    loop.loop();
 }
-
