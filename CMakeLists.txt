@@ -10,5 +10,5 @@ include_directories(muduo/base)
 include_directories(net)
 include_directories(.)
 
-link_libraries(pthread)
+link_libraries(pthread )
 add_executable(tinymuduo main.cpp ${Base} ${Net} ${Utility})

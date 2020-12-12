@@ -1,15 +1,29 @@
-#include "Acceptor.h"
+#include "TcpServer.h"
 #include "EventLoop.h"
 #include "InetAddress.h"
-#include "SocketsOps.h"
 #include <stdio.h>
 
-void newConnection(int sockfd, const InetAddress& peerAddr)
+void onConnection(const muduo::TcpConnectionPtr& conn)
 {
-    printf("newConnection(): accepted a new connection from %s\n",
-           peerAddr.toHostPort().c_str());
-    ::write(sockfd, "How are you?\n", 13);
-    muduo::sockets::close(sockfd);
+    if (conn->connected())
+    {
+        printf("onConnection(): new connection [%s] from %s\n",
+               conn->name().c_str(),
+               conn->peerAddress().toHostPort().c_str());
+    }
+    else
+    {
+        printf("onConnection(): connection [%s] is down\n",
+               conn->name().c_str());
+    }
+}
+
+void onMessage(const muduo::TcpConnectionPtr& conn,
+               const char* data,
+               ssize_t len)
+{
+    printf("onMessage(): received %zd bytes from connection [%s]\n",
+           len, conn->name().c_str());
 }
 
 int main()
@@ -19,9 +33,10 @@ int main()
     InetAddress listenAddr(9981);
     EventLoop loop;
 
-    Acceptor acceptor(&loop, listenAddr);
-    acceptor.setNewConnectionCallback(newConnection);
-    acceptor.listen();
+    TcpServer server(&loop, listenAddr);
+    server.setConnectionCallback(onConnection);
+    server.setMessageCallback(onMessage);
+    server.start();
 
     loop.loop();
 }
