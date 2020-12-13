@@ -27,62 +27,71 @@ namespace muduo {
 
 ///这里enable_shared_from_this一定要public继承，默认是private继承，只继承功能，不继承接口，就有大问题！！！！
 ///private继承可以转化为组合实现
-    class TcpConnection : noncopyable, public std::enable_shared_from_this<TcpConnection> {
+class TcpConnection : noncopyable, public std::enable_shared_from_this<TcpConnection> {
 
-    public:
-        /// Constructs a TcpConnection with a connected sockfd
-        ///
-        /// User should not create this object.
-        TcpConnection(EventLoop *loop,
-                      const std::string &name,
-                      int sockfd,
-                      const InetAddress &localAddr,
-                      const InetAddress &peerAddr);
+public:
+    /// Constructs a TcpConnection with a connected sockfd
+    ///
+    /// User should not create this object.
+    TcpConnection(EventLoop *loop,
+                  const std::string &name,
+                  int sockfd,
+                  const InetAddress &localAddr,
+                  const InetAddress &peerAddr);
 
-        ~TcpConnection();
+    ~TcpConnection();
 
-        EventLoop *getLoop() const { return loop_; }
+    EventLoop *getLoop() const { return loop_; }
 
-        const std::string &name() const { return name_; }
+    const std::string &name() const { return name_; }
 
-        const InetAddress &localAddress() { return localAddr_; }
+    const InetAddress &localAddress() { return localAddr_; }
 
-        const InetAddress &peerAddress() { return peerAddr_; }
+    const InetAddress &peerAddress() { return peerAddr_; }
 
-        bool connected() const { return state_ == kConnected; }
+    bool connected() const { return state_ == kConnected; }
 
-        void setConnectionCallback(const muduo::ConnectionCallback &cb) { connectionCallback_ = cb; }
+    void setConnectionCallback(const muduo::ConnectionCallback &cb) { connectionCallback_ = cb; }
 
-        void setMessageCallback(const muduo::MessageCallback &cb) { messageCallback_ = cb; }
+    void setMessageCallback(const muduo::MessageCallback &cb) { messageCallback_ = cb; }
 
-        /// Internal use only.
+    /// Internal use only.
+    void setCloseCallback(const CloseCallback& cb) { closeCallback_ = cb; }
 
-        /// called when TcpServer accepts a new connection
-        void connectEstablished();   // should be called only once
+    /// Internal use only.
 
-    private:
-        enum StateE {
-            kConnecting, kConnected,
-        };
+    /// called when TcpServer accepts a new connection
+    void connectEstablished();   // should be called only once
+    // called when TcpServer has removed me from its map
+    void connectDestroyed();  // should be called only once
 
-        void setState(StateE s) { state_ = s; }
-
-        void handleRead();
-
-        EventLoop *loop_;
-        std::string name_;
-        StateE state_;  // FIXME: use atomic variable
-        // we don't expose those classes to client.
-        std::unique_ptr<Socket> socket_;
-        std::unique_ptr<Channel> channel_;
-        InetAddress localAddr_;
-        InetAddress peerAddr_;
-        muduo::ConnectionCallback connectionCallback_;
-        muduo::MessageCallback messageCallback_;
-        boost::any context_;
+private:
+    enum StateE {
+        kConnecting, kConnected, kDisconnected,
     };
 
+    void setState(StateE s) { state_ = s; }
+
+    void handleRead();
+    void handleWrite();
+    void handleClose();
+    void handleError();
+
+    EventLoop *loop_;
+    std::string name_;
+    StateE state_;  // FIXME: use atomic variable
+    // we don't expose those classes to client.
+    std::unique_ptr<Socket> socket_;
+    std::unique_ptr<Channel> channel_;
+    InetAddress localAddr_;
+    InetAddress peerAddr_;
+    muduo::ConnectionCallback connectionCallback_;
+    muduo::MessageCallback messageCallback_;
+    muduo::CloseCallback  closeCallback_;
+    boost::any context_;
 };
+
+}
 
 
 

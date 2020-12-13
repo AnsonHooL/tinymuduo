@@ -160,6 +160,14 @@ void EventLoop::updateChannel(Channel* channel)
     poller_->updateChannel(channel);
 }
 
+///eventloop删除channel中介
+void EventLoop::removeChannel(Channel* channel)
+{
+    assert(channel->ownerLoop() == this);
+    assertInLoopThread();
+    poller_->removeChannel(channel);
+}
+
 void EventLoop::abortNotInLoopThread()
 {
     LOG_FATAL << "EventLoop::abortNotInLoopThread - EventLoop " << this

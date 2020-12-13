@@ -48,8 +48,9 @@ void TcpServer::start()
 }
 
 
-///acceptor新连接回调函数
-///创建一个Tcpconnection，注册回调函数
+///这是acceptor新连接回调函数
+///创建一个Tcpconnection，注册可读可写回调函数，close回调函数（用户不可知）
+///Tcpconn设置建立连接
 void TcpServer::newConnection(int sockfd, const InetAddress& peerAddr)
 {
     loop_->assertInLoopThread();
@@ -68,5 +69,20 @@ void TcpServer::newConnection(int sockfd, const InetAddress& peerAddr)
     connections_[connName] = conn;
     conn->setConnectionCallback(connectionCallback_);
     conn->setMessageCallback(messageCallback_);
+    conn->setCloseCallback(
+            boost::bind(&TcpServer::removeConnection, this, _1));
     conn->connectEstablished();
+}
+
+
+
+void TcpServer::removeConnection(const TcpConnectionPtr& conn)
+{
+    loop_->assertInLoopThread();
+    LOG_INFO << "TcpServer::removeConnection [" << name_
+             << "] - connection " << conn->name();
+    size_t n = connections_.erase(conn->name());
+    assert(n == 1); (void)n;
+    loop_->queueInLoop(
+            boost::bind(&TcpConnection::connectDestroyed, conn));
 }

@@ -75,7 +75,7 @@ public:
     /// internal use only
     void wakeup();
     void updateChannel(Channel* channel);
-    // void removeChannel(Channel* channel);
+    void removeChannel(Channel* channel);
 
     void assertInLoopThread()
     {

@@ -51,7 +51,7 @@ public:
 private:
     /// Not thread safe, but in loop
     void newConnection(int sockfd, const InetAddress& peerAddr);
-
+    void removeConnection(const muduo::TcpConnectionPtr& conn);
     typedef std::map<std::string, muduo::TcpConnectionPtr> ConnectionMap;
 
     EventLoop* loop_;  // the acceptor loop

@@ -20,6 +20,7 @@ public:
     typedef std::function<void()> EventCallback;
 
     Channel(EventLoop* loop, int fd);
+    ~Channel();
 
     ///活跃的channel处理读写事件统一调用接口
     void handleEvent();
@@ -29,6 +30,8 @@ public:
     { writeCallback_ = cb; }
     void setErrorCallback(const EventCallback& cb) ///设置异常事件回调函数
     { errorCallback_ = cb; }
+    void setCloseCallback(const EventCallback& cb)
+    { closeCallback_ = cb; }
 
     ///过去channel状态接口
     int fd() const { return fd_; }
@@ -41,7 +44,7 @@ public:
     void enableReading() { events_ |= kReadEvent; update(); }
     // void enableWriting() { events_ |= kWriteEvent; update(); }
     // void disableWriting() { events_ &= ~kWriteEvent; update(); }
-    // void disableAll() { events_ = kNoneEvent; update(); }
+     void disableAll() { events_ = kNoneEvent; update(); }
 
     /// for Poller 标记channel在poll的关注数组位置
     int index() { return index_; }
@@ -66,6 +69,9 @@ private:
     EventCallback readCallback_;
     EventCallback writeCallback_;
     EventCallback errorCallback_;
+    EventCallback closeCallback_;
+
+    bool eventHandling_;
 
 };
 

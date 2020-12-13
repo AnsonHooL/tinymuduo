@@ -26,6 +26,10 @@ Channel::Channel(EventLoop* loop, int fdArg)
 {
 }
 
+///断言channel析构的时候一定没有在处理事件
+///防止处理事件过程,tcpconn close了自己
+Channel::~Channel() { assert(!eventHandling_); }
+
 ///更新channel关注的事件
 void Channel::update()
 {
@@ -35,10 +39,15 @@ void Channel::update()
 ///channel响应可读可写事件还有error，执行注册的回调函数
 void Channel::handleEvent()
 {
+    eventHandling_ = true;
     if (revents_ & POLLNVAL) {
         LOG_WARN << "Channel::handle_event() POLLNVAL";
     }
 
+    if ((revents_ & POLLHUP) && !(revents_ & POLLIN)) {
+        LOG_WARN << "Channel::handle_event() POLLHUP";
+        if (closeCallback_) closeCallback_();
+    }
     if (revents_ & (POLLERR | POLLNVAL)) {
         if (errorCallback_) errorCallback_();
     }
@@ -48,4 +57,5 @@ void Channel::handleEvent()
     if (revents_ & POLLOUT) {
         if (writeCallback_) writeCallback_();
     }
+    eventHandling_ = false;
 }
