@@ -34,7 +34,7 @@ TcpConnection::TcpConnection(EventLoop *loop,
     LOG_DEBUG << "TcpConnection::ctor[" <<  name_ << "] at " << this
               << " fd=" << sockfd;
     channel_->setReadCallback(
-            std::bind(&TcpConnection::handleRead, this));
+            std::bind(&TcpConnection::handleRead, this, std::placeholders::_1)); ///std::bind一定要给够参数给绑定的函数，不够就用_1,_2
     channel_->setWriteCallback(
             std::bind(&TcpConnection::handleWrite, this));
     channel_->setCloseCallback(
@@ -82,12 +82,12 @@ void TcpConnection::connectDestroyed()
 
 ///channel的可读回调函数，先把数据读进来
 ///再把数据传回注册的消息回调函数
-void TcpConnection::handleRead()
+void TcpConnection::handleRead(Timestamp receiveTime)
 {
-    char buf[65536];
-    ssize_t n = ::read(channel_->fd(), buf, sizeof buf);
+    int savedErrno = 0;
+    ssize_t n = inputBuffer_.readFd(channel_->fd(), &savedErrno);
     if (n > 0) {
-        messageCallback_(shared_from_this(), buf, n);
+        messageCallback_(shared_from_this(), &inputBuffer_, receiveTime);
     } else if (n == 0) {
         handleClose();
     } else {

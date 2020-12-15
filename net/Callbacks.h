@@ -8,7 +8,7 @@
 
 #include <functional>
 #include <memory>
-
+#include "Buffer.h"
 #include "Timestamp.h"
 
 namespace muduo
@@ -22,8 +22,8 @@ namespace muduo
     typedef std::function<void()> TimerCallback;
     typedef std::function<void (const TcpConnectionPtr&)> ConnectionCallback;
     typedef std::function<void (const TcpConnectionPtr&,
-                                  const char* data,
-                                  ssize_t len)> MessageCallback;
+                                  Buffer* buf,
+                                  Timestamp)> MessageCallback;
     typedef std::function<void (const TcpConnectionPtr&)> CloseCallback;
 
 }

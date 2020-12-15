@@ -5,6 +5,7 @@
 #ifndef TINYMUDUO_TCPCONNECTION_H
 #define TINYMUDUO_TCPCONNECTION_H
 
+#include "Buffer.h"
 #include "Callbacks.h"
 #include "InetAddress.h"
 
@@ -72,7 +73,7 @@ private:
 
     void setState(StateE s) { state_ = s; }
 
-    void handleRead();
+    void handleRead(Timestamp receiveTime);
     void handleWrite();
     void handleClose();
     void handleError();
@@ -88,6 +89,7 @@ private:
     muduo::ConnectionCallback connectionCallback_;
     muduo::MessageCallback messageCallback_;
     muduo::CloseCallback  closeCallback_;
+    Buffer inputBuffer_;
     boost::any context_;
 };
 

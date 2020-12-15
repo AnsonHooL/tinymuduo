@@ -37,7 +37,7 @@ void Channel::update()
 }
 
 ///channel响应可读可写事件还有error，执行注册的回调函数
-void Channel::handleEvent()
+void Channel::handleEvent(Timestamp receiveTime)
 {
     eventHandling_ = true;
     if (revents_ & POLLNVAL) {
@@ -52,7 +52,7 @@ void Channel::handleEvent()
         if (errorCallback_) errorCallback_();
     }
     if (revents_ & (POLLIN | POLLPRI | POLLRDHUP)) {
-        if (readCallback_) readCallback_();
+        if (readCallback_) readCallback_(receiveTime);
     }
     if (revents_ & POLLOUT) {
         if (writeCallback_) writeCallback_();

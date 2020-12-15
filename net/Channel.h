@@ -11,6 +11,7 @@
 #include <functional>
 #include "noncopyable.h"
 
+#include <Timestamp.h>
 class EventLoop;
 
 class Channel : public noncopyable
@@ -18,13 +19,14 @@ class Channel : public noncopyable
 public:
 
     typedef std::function<void()> EventCallback;
+    typedef std::function<void(muduo::Timestamp)> ReadEventCallback;
 
     Channel(EventLoop* loop, int fd);
     ~Channel();
 
     ///活跃的channel处理读写事件统一调用接口
-    void handleEvent();
-    void setReadCallback(const EventCallback& cb) ///设置读事件回调函数
+    void handleEvent(muduo::Timestamp receiveTime);
+    void setReadCallback(const ReadEventCallback& cb) ///设置读事件回调函数，这里readcallback是需要一个参数的，但是cb如果是0个参数的函数也能编译运行
     { readCallback_ = cb; }
     void setWriteCallback(const EventCallback& cb) ///设置写事件回调函数
     { writeCallback_ = cb; }
@@ -66,7 +68,7 @@ private:
     int        revents_;//活跃事件
     int        index_; // used by Poller.
 
-    EventCallback readCallback_;
+    ReadEventCallback readCallback_;
     EventCallback writeCallback_;
     EventCallback errorCallback_;
     EventCallback closeCallback_;
