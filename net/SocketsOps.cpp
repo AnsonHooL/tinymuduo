@@ -160,6 +160,15 @@ void sockets::close(int sockfd)
     }
 }
 
+///写端关闭，半连接状态
+void sockets::shutdownWrite(int sockfd)
+{
+    if (::shutdown(sockfd, SHUT_WR) < 0)
+    {
+        LOG_SYSERR << "sockets::shutdownWrite";
+    }
+}
+
 ///将二进制的ip和端口转化为点分制的ip和端口
 void sockets::toHostPort(char* buf, size_t size,
                          const struct sockaddr_in& addr)

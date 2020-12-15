@@ -12,3 +12,4 @@ include_directories(.)
 
 link_libraries(pthread )
 add_executable(tinymuduo main.cpp ${Base} ${Net} ${Utility})
+add_executable(echo echoserver.cpp ${Base} ${Net} ${Utility})

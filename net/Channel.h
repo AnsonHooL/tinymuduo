@@ -44,9 +44,10 @@ public:
 
     ///开启、关闭channel读写事件接口
     void enableReading() { events_ |= kReadEvent; update(); }
-    // void enableWriting() { events_ |= kWriteEvent; update(); }
-    // void disableWriting() { events_ &= ~kWriteEvent; update(); }
-     void disableAll() { events_ = kNoneEvent; update(); }
+    void enableWriting() { events_ |= kWriteEvent; update(); }
+    void disableWriting() { events_ &= ~kWriteEvent; update(); }
+    void disableAll() { events_ = kNoneEvent; update(); }
+    bool isWriting() const { return events_ & kWriteEvent; }
 
     /// for Poller 标记channel在poll的关注数组位置
     int index() { return index_; }

@@ -52,4 +52,10 @@ void Socket::setReuseAddr(bool on)
     // FIXME CHECK
 }
 
+void Socket::shutdownWrite()
+{
+  sockets::shutdownWrite(sockfd_);
+}
+
+
 

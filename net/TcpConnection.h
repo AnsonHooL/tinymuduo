@@ -43,19 +43,19 @@ public:
     ~TcpConnection();
 
     EventLoop *getLoop() const { return loop_; }
-
     const std::string &name() const { return name_; }
-
     const InetAddress &localAddress() { return localAddr_; }
-
     const InetAddress &peerAddress() { return peerAddr_; }
-
     bool connected() const { return state_ == kConnected; }
 
+    //void send(const void* message, size_t len);
+    // Thread safe.
+    void send(const std::string& message);
+    // Thread safe.
+    void shutdown();
+
     void setConnectionCallback(const muduo::ConnectionCallback &cb) { connectionCallback_ = cb; }
-
     void setMessageCallback(const muduo::MessageCallback &cb) { messageCallback_ = cb; }
-
     /// Internal use only.
     void setCloseCallback(const CloseCallback& cb) { closeCallback_ = cb; }
 
@@ -68,7 +68,7 @@ public:
 
 private:
     enum StateE {
-        kConnecting, kConnected, kDisconnected,
+        kConnecting, kConnected, kDisconnecting, kDisconnected,
     };
 
     void setState(StateE s) { state_ = s; }
@@ -77,6 +77,8 @@ private:
     void handleWrite();
     void handleClose();
     void handleError();
+    void shutdownInLoop();
+    void sendInLoop(const std::string& message);
 
     EventLoop *loop_;
     std::string name_;
@@ -90,6 +92,7 @@ private:
     muduo::MessageCallback messageCallback_;
     muduo::CloseCallback  closeCallback_;
     Buffer inputBuffer_;
+    Buffer outputBuffer_;
     boost::any context_;
 };
 
