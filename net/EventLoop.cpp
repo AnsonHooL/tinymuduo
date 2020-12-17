@@ -12,7 +12,7 @@
 
 #include <assert.h>
 #include <sys/eventfd.h>
-
+#include <signal.h>
 using namespace muduo;
 
 ///TLS thread local storage 每个线程有一份自己的Eventloop指针
@@ -32,6 +32,19 @@ static int createEventfd()
     return evtfd;
 
 }
+
+///屏蔽掉SISGPIPE信号
+///服务器可能因为忙，没有及时处理对方断开连接事件，在断联后继续发送数据，就会被终止进程
+class IgnoreSigPipe
+{
+public:
+    IgnoreSigPipe()
+    {
+        ::signal(SIGPIPE, SIG_IGN);
+    }
+};
+
+IgnoreSigPipe initObj;
 
 ///监听wakeup_fd，说明有异步的回调函数需要操作（add timer等）
 ///初始化有wakeup_fd，timer_fd，acceptor_fd

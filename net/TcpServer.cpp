@@ -9,10 +9,10 @@
 #include "EventLoop.h"
 #include "SocketsOps.h"
 
-#include <boost/bind.hpp>
+#include <functional>
 
 #include <stdio.h>  // snprintf
-
+using namespace std::placeholders;
 ///ip、port名字
 ///注册Acceptor的有新链接的回调函数：
 ///1.创建Tcpconnect
@@ -25,7 +25,7 @@ TcpServer::TcpServer(EventLoop* loop, const InetAddress& listenAddr)
 {
 
     acceptor_->setNewConnectionCallback(
-            boost::bind(&TcpServer::newConnection, this, _1, _2));
+           std::bind(&TcpServer::newConnection, this, _1, _2));
 }
 
 TcpServer::~TcpServer()
@@ -43,7 +43,7 @@ void TcpServer::start()
     if (!acceptor_->listenning())
     {
         loop_->runInLoop(
-                boost::bind(&Acceptor::listen, acceptor_.get()));
+                std::bind(&Acceptor::listen, acceptor_.get()));
     }
 }
 
@@ -70,7 +70,8 @@ void TcpServer::newConnection(int sockfd, const InetAddress& peerAddr)
     conn->setConnectionCallback(connectionCallback_);
     conn->setMessageCallback(messageCallback_);
     conn->setCloseCallback(
-            boost::bind(&TcpServer::removeConnection, this, _1));
+            std::bind(&TcpServer::removeConnection, this, _1));
+    conn->setWriteCompleteCallback(writeCompleteCallback_);
     conn->connectEstablished();
 }
 
@@ -84,5 +85,5 @@ void TcpServer::removeConnection(const TcpConnectionPtr& conn)
     size_t n = connections_.erase(conn->name());
     assert(n == 1); (void)n;
     loop_->queueInLoop(
-            boost::bind(&TcpConnection::connectDestroyed, conn));
+            std::bind(&TcpConnection::connectDestroyed, conn));
 }

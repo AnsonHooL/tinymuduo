@@ -53,9 +53,11 @@ public:
     void send(const std::string& message);
     // Thread safe.
     void shutdown();
+    void setTcpNoDelay(bool on);
 
     void setConnectionCallback(const muduo::ConnectionCallback &cb) { connectionCallback_ = cb; }
     void setMessageCallback(const muduo::MessageCallback &cb) { messageCallback_ = cb; }
+    void setWriteCompleteCallback(const muduo::WriteCompleteCallback& cb) { writeCompleteCallback_ = cb; }
     /// Internal use only.
     void setCloseCallback(const CloseCallback& cb) { closeCallback_ = cb; }
 
@@ -90,6 +92,7 @@ private:
     InetAddress peerAddr_;
     muduo::ConnectionCallback connectionCallback_;
     muduo::MessageCallback messageCallback_;
+    muduo::WriteCompleteCallback writeCompleteCallback_;
     muduo::CloseCallback  closeCallback_;
     Buffer inputBuffer_;
     Buffer outputBuffer_;

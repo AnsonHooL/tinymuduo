@@ -48,6 +48,11 @@ public:
     void setMessageCallback(const muduo::MessageCallback& cb)
     { messageCallback_ = cb; }
 
+    /// Set write complete callback.
+    /// Not thread safe.
+    void setWriteCompleteCallback(const muduo::WriteCompleteCallback& cb)
+    { writeCompleteCallback_ = cb; }
+
 private:
     /// Not thread safe, but in loop
     void newConnection(int sockfd, const InetAddress& peerAddr);
@@ -61,6 +66,7 @@ private:
     ///Acceptor有新连接时候，新建一个Tcpconnet，将用户注册的回调函数，传给Tcpconnet
     muduo::ConnectionCallback connectionCallback_;
     muduo::MessageCallback messageCallback_;
+    muduo::WriteCompleteCallback writeCompleteCallback_;
     bool started_;
     int nextConnId_;  // always in loop thread
     ConnectionMap connections_;
