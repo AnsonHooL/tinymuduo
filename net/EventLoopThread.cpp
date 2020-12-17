@@ -57,7 +57,4 @@ void EventLoopThread::threadFunc()
     }
 
     loop.loop();
-    sleep(10);
-    printf("hhh\n");
-
 }
