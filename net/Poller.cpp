@@ -80,7 +80,7 @@ void Poller::updateChannel(Channel *channel)
     }
     else
     {
-        // update existing one, 更新channel的关注事件，若不关注事件则设置其fd = -1
+        // update existing one, 更新channel的关注事件，若不关注事件则设置其fd = -fd -1
         assert(channels_.find(channel->fd()) != channels_.end());
         assert(channels_[channel->fd()] == channel);
         int idx = channel->index();

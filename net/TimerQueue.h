@@ -11,6 +11,7 @@
 #include <noncopyable.h>
 
 #include "Timestamp.h"
+#include "Mutex.h"
 //#include "thread/Mutex.h"
 #include "Callbacks.h"
 #include "Channel.h"
@@ -38,13 +39,15 @@ public:
                      muduo::Timestamp when,
                      double interval);
 
-    // void cancel(TimerId timerId);
+     void cancel(TimerId timerId);
 
 private:
 
     // FIXME: use unique_ptr<Timer> instead of raw pointers.
     typedef std::pair<muduo::Timestamp, Timer*> Entry;//用同时到期的定时器，所以用时间戳+地址找到唯一定时器
     typedef std::set<Entry> TimerList;
+    typedef std::pair<Timer*, int64_t> ActiveTimer;
+    typedef std::set<ActiveTimer> ActiveTimerSet;
 
     void addTimerInLoop(Timer* timer);
     // called when timerfd alarms
@@ -54,12 +57,18 @@ private:
     void reset(const std::vector<Entry>& expired, muduo::Timestamp now); //重复定时器
 
     bool insert(Timer* timer); //定时器队列理添加一个新的定时器
+    void cancelInLoop(TimerId timerId);
 
     EventLoop* loop_; //所属的事件循环
     const int timerfd_; //用linux提供的接口实现，定时事件变成timerfd可读事件
     Channel timerfdChannel_;
     // Timer list sorted by expiration
     TimerList timers_; //定时器列表，set是有序的，按时间戳由小到大排序
+
+    // for cancel()
+    bool callingExpiredTimers_; /* atomic */
+    ActiveTimerSet activeTimers_; ///保存所有活跃的定时器，即还没到期的定时器
+    ActiveTimerSet cancelingTimers_; ///定时器自删除的时候，加入到这个set里面
 };
 
 

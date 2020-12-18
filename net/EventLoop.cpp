@@ -165,6 +165,11 @@ TimerId EventLoop::runEvery(double interval, const TimerCallback& cb)
     return timerQueue_->addTimer(cb, time, interval);
 }
 
+void EventLoop::cancel(TimerId timerId)
+{
+    return timerQueue_->cancel(timerId);
+}
+
 ///线程安全地更新channel
 void EventLoop::updateChannel(Channel* channel)
 {
