@@ -49,7 +49,7 @@ public:
     void disableAll() { events_ = kNoneEvent; update(); }
     bool isWriting() const { return events_ & kWriteEvent; }
 
-    /// for Poller 标记channel在poll的关注数组位置
+    /// for Poller 标记channel在poll的关注数组位置，或者epoll的状态
     int index() { return index_; }
     void set_index(int idx) { index_ = idx; }
 

@@ -19,6 +19,8 @@ using namespace muduo;
 
 class Channel;
 class Poller;
+class EPoller;
+
 class TimerQueue;
 
 class EventLoop : public noncopyable
@@ -100,7 +102,8 @@ private:
 
     const pid_t threadId_;
     Timestamp pollReturnTime_;
-    std::unique_ptr<Poller> poller_;
+//    std::unique_ptr<Poller> poller_;
+    std::unique_ptr<EPoller> poller_;
     std::unique_ptr<TimerQueue> timerQueue_;
     ChannelList activeChannels_;
 
